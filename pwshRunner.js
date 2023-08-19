@@ -4,6 +4,8 @@
 
 // Import the child_process module to spawn a child process
 function pwshRunner(script) {
+    console.log(script);
+    // console.log(inputString);
     const { spawn } = require('child_process');
     // Wrap the child process in a promise so we can wait for it to finish
     return new Promise((resolve, reject) => {

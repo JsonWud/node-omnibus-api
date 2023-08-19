@@ -1,8 +1,11 @@
 // Import required modules
 const express = require('express');
-const psScript = require('./pwsh-script.json');
+const requireText = require('require-text');
 const pwshRunner = require('./pwshRunner');
 const fs = require('fs');
+const jsonifyPwsh = require('./jsonify-pwsh');
+const combinePwsh = require('./combinePwsh');
+const psScript = requireText('./pwsh-script.ps1', require);
 
 // Create Express app
 const app = express();
@@ -29,18 +32,10 @@ app.post('/post', (req, res) => {
 
 // Post endpoint to run powershell script
 app.post('/pwsh-json', async (req, res) => {
-    await pwshRunner(psScript['script-content'])
-        .then((output) => {
-            res.send(output);
-        })
-        .catch((err) => {
-            res.send(err);
-        });
-});
-
-app.post('/pwsh-ps1', async (req, res) => {
-    const ps1Contents = fs.readFileSync('./pwsh-script.ps1', 'utf8');
-    await pwshRunner(ps1Contents)
+    console.log(req.body);
+    // const base64Script = await jsonifyPwsh(psScript, JSON.stringify(req.body));
+    const pwshCodeBlock = combinePwsh(psScript, JSON.stringify(req.body));
+    await pwshRunner(pwshCodeBlock)
         .then((output) => {
             res.send(output);
         })
