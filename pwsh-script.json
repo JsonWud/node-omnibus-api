@@ -1,0 +1,4 @@
+{
+    "script-name": "pwsh-script.ps1",
+    "script-content": "@{message = 'Running pwsh from ps1 file!' } | ConvertTo-Json"
+}

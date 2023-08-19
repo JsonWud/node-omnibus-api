@@ -1,0 +1,1 @@
+@{message = 'Running pwsh from ps1 file!' } | ConvertTo-Json
