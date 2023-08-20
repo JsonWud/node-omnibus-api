@@ -5,11 +5,16 @@
   "main": "server.js",
   "bin": "server.js",
   "pkg": {
-    "outputPath": "dist"
+    "outputPath": "dist",
+    "targets": [
+      "node18-win-x64",
+      "node18-macos-x64",
+      "node18-linux-x64"
+    ]
   },
   "scripts": {
     "dev": "nodemon server.js",
-    "package": "pkg . --targets node18-win-x64,node18-macos-x64,node18-linux-x64"
+    "package": "pkg ."
   },
   "repository": {
     "type": "git",
