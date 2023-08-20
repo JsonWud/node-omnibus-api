@@ -1,10 +1,7 @@
 // This is a node module that will export a default function named pwshRunner
 // This function will take a string as input and return a promise that will
 // resolve to the output of the powershell script
-
-// Import the child_process module to spawn a child process
 function pwshRunner(script) {
-    // console.log(script);
     const { spawn } = require('child_process');
     // Wrap the child process in a promise so we can wait for it to finish
     return new Promise((resolve, reject) => {

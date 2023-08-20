@@ -1,10 +1,11 @@
-// Import required modules
+// Import required modules and scripts
 const express = require('express');
-const requireText = require('require-text');
+const path = require('path');
+const fs = require('fs');
 const pwshRunner = require('./pwshRunner');
 const combinePwsh = require('./combinePwsh');
-const path = require('path');
-const psScript = requireText((path.join(__dirname, 'pwsh-script.ps1')), require);
+// because we use path.join here, the pwsh script will be included in the pkg executable
+const psScript = fs.readFileSync(path.join(__dirname, 'pwsh-script.ps1'), 'utf8');
 
 // Create Express app
 const app = express();
@@ -14,7 +15,7 @@ app.use(express.json());
 
 // Define root endpoint
 app.get('/', (req, res) => {
-    res.send('Hello Jason');
+    res.send('Hello World!');
 });
 
 // Define post endpoint
@@ -30,7 +31,7 @@ app.post('/post', (req, res) => {
 });
 
 // Post endpoint to run powershell script
-app.post('/pwsh-json', async (req, res) => {
+app.post('/pwsh-script', async (req, res) => {
     console.log('#'.repeat(80));
     console.log('#'.repeat(80));
     console.log('Received the following request body:')
