@@ -6,6 +6,7 @@ const pwshRunner = require('./pwshRunner');
 const combinePwsh = require('./combinePwsh');
 // because we use path.join here, the pwsh script will be included in the pkg executable
 const psScript = fs.readFileSync(path.join(__dirname, 'pwsh-script.ps1'), 'utf8');
+const port = 3000;
 
 // Create Express app
 const app = express();
@@ -51,4 +52,4 @@ app.post('/pwsh-script', async (req, res) => {
 });
 
 // Start server
-app.listen(3000, () => console.log('Server ready'));
+app.listen(port, () => console.log(`Server listening on port ${port}!`));
