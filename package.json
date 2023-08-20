@@ -3,10 +3,13 @@
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
+  "bin": "server.js",
+  "pkg": {
+    "outputPath": "dist"
+  },
   "scripts": {
-    "dev": "node jsonify-pwsh; nodemon server.js",
-    "build": "node jsonify-pwsh",
-    "package": "pkg ./server.js --targets node18-win-x64,node18-macos-x64,node18-linux-x64 --out-path ./dist"
+    "dev": "nodemon server.js",
+    "package": "pkg . --targets node18-win-x64,node18-macos-x64,node18-linux-x64"
   },
   "repository": {
     "type": "git",

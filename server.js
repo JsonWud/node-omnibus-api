@@ -2,10 +2,9 @@
 const express = require('express');
 const requireText = require('require-text');
 const pwshRunner = require('./pwshRunner');
-const fs = require('fs');
-const jsonifyPwsh = require('./jsonify-pwsh');
 const combinePwsh = require('./combinePwsh');
-const psScript = requireText('./pwsh-script.ps1', require);
+const path = require('path');
+const psScript = requireText((path.join(__dirname, 'pwsh-script.ps1')), require);
 
 // Create Express app
 const app = express();
@@ -23,17 +22,23 @@ app.post('/post', (req, res) => {
     const requestJson = req.body;
     console.log(req.body);
     const response = {
-        message: `You sent me ${JSON.stringify(requestJson)}`,
-        status: 'success',
-        reaction: 'what a riot!'
+        message: `You Posted: ${JSON.stringify(requestJson)}`,
+        status: 'Great Success!',
+        reaction: '~* ~* Much Joy *~ *~'
     };
     res.send(response);
 });
 
 // Post endpoint to run powershell script
 app.post('/pwsh-json', async (req, res) => {
+    console.log('#'.repeat(80));
+    console.log('#'.repeat(80));
+    console.log('Received the following request body:')
+    console.log('#'.repeat(80));
     console.log(req.body);
-    // const base64Script = await jsonifyPwsh(psScript, JSON.stringify(req.body));
+    console.log('#'.repeat(80));
+    console.log('#'.repeat(80));
+
     const pwshCodeBlock = combinePwsh(psScript, JSON.stringify(req.body));
     await pwshRunner(pwshCodeBlock)
         .then((output) => {
