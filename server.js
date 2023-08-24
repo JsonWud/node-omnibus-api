@@ -35,14 +35,66 @@ app.post('/post', (req, res) => {
 app.post('/pwsh-script', async (req, res) => {
     console.log('#'.repeat(80));
     console.log('#'.repeat(80));
-    console.log('Received the following request body:')
+    console.log('PWSH-SCRIPT:::Received the following request body:')
     console.log('#'.repeat(80));
     console.log(req.body);
     console.log('#'.repeat(80));
     console.log('#'.repeat(80));
 
     const pwshCodeBlock = combinePwsh(psScript, JSON.stringify(req.body));
-    await pwshRunner(pwshCodeBlock)
+    const mode = '-c'
+    const args = '';
+    await pwshRunner(mode, pwshCodeBlock, args)
+        .then((output) => {
+            res.send(output);
+        })
+        .catch((err) => {
+            res.send(err);
+        });
+});
+
+// Post endpoint to dynamically run powershell file from assets folder
+app.post('/pwsh-file', async (req, res) => {
+    console.log('#'.repeat(80));
+    console.log('#'.repeat(80));
+    console.log('PWSH-FILE:::Received the following request body:')
+    console.log('#'.repeat(80));
+    console.log(req.body);
+    console.log('#'.repeat(80));
+    console.log('#'.repeat(80));
+
+    const assetFileName = req.body.AssetFile;
+    const pwshFileContent = fs.readFileSync(path.join(__dirname, `/assets/${assetFileName}.ps1`), 'utf8');
+    const pwshScriptBlock = combinePwsh(pwshFileContent, JSON.stringify(req.body));
+    const mode = '-c'
+    const args = '';
+    await pwshRunner(mode, pwshScriptBlock, args)
+        .then((output) => {
+            res.send(output);
+        })
+        .catch((err) => {
+            res.send(err);
+        });
+});
+
+// fs.mkdtempSync(prefix[, options])
+// Post endpoint to run the powershell script from the temp directory
+app.post('/pwsh-temp', async (req, res) => {
+    console.log('#'.repeat(80));
+    console.log('#'.repeat(80));
+    console.log('PWSH-TEMP:::Received the following request body:')
+    console.log('#'.repeat(80));
+    console.log(req.body);
+    console.log('#'.repeat(80));
+    console.log('#'.repeat(80));
+
+    const tempDir = fs.mkdtempSync('pwsh-temp-');
+    const tempFilePath = path.join(tempDir, 'pwsh-script.ps1');
+    fs.writeFileSync(tempFilePath, psScript, 'utf8');
+    const pwshCodeBlock = combinePwsh(tempFilePath, JSON.stringify(req.body));
+    const mode = '-c'
+    const args = '';
+    await pwshRunner(mode, pwshCodeBlock, args)
         .then((output) => {
             res.send(output);
         })
