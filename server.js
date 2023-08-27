@@ -97,8 +97,7 @@ app.post('/pwsh-command', async (req, res) => {
         });
 });
 
-// fs.mkdtempSync(prefix[, options])
-// Post endpoint to run the powershell script from the temp directory
+// Post endpoint to run the powershell script from the tmpdir directory
 app.post('/pwsh-temp-file', async (req, res) => {
     console.log('#'.repeat(80));
     console.log('#'.repeat(80));
@@ -109,10 +108,11 @@ app.post('/pwsh-temp-file', async (req, res) => {
     console.log('#'.repeat(80));
 
     const pwshFilePath = path.join(tmpFilePath, 'pwsh-script-wparam.ps1')
-    console.log(`pwshFilePath: ${pwshFilePath}`);
+    console.log(`User just ran the pwsh file: ${pwshFilePath}`);
     const mode = '-f'
     const args = JSON.stringify(req.body);
-    await pwshRunner(mode, pwshFilePath, args)
+    const cwd = tmpFilePath;
+    await pwshRunner(mode, 'pwsh-script-wparam.ps1', args, cwd)
         .then((output) => {
             res.json(JSON.parse(output));
         })
