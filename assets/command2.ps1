@@ -4,5 +4,5 @@ $jsonObj = $jsonString | ConvertFrom-Json -Depth 100
     timestamp     = (Get-Date -f 'yyyyMMdd::HHmmss:ffff')
     YourMessage   = $jsonObj.Message
     OriginalInput = $jsonString
-    AssetFile     = $jsonObj.AssetFile
+    CommandFile   = $jsonObj.CommandFile
 } | ConvertTo-Json

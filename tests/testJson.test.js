@@ -17,7 +17,7 @@ test.describe('testJson', () => {
         const jsonString = '{"name": "John Doe", "age": 30, "email": "johndoe@example.com"}';
         const jsonObject = JSON.parse(jsonString);
         const result = testJson(jsonObject, schemaObj);
-        console.log(result);
+        console.log(result.errors);
         assert.strictEqual(result.errors.length, 0);
     });
 
@@ -25,7 +25,7 @@ test.describe('testJson', () => {
         const jsonString = '{"name": "John Doe", "age": "30", "email": "johndoe@example.com"}';
         const jsonObject = JSON.parse(jsonString);
         const result = testJson(jsonObject, schemaObj);
-        console.log(result);
+        console.log(result.errors);
         assert(result.errors.length > 0);
     });
 });
