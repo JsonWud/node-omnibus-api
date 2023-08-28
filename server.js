@@ -2,27 +2,27 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
-const pwshRunner = require('./pwshRunner');
-const combinePwsh = require('./combinePwsh');
+const pwshRunner = require('./utils/pwshRunner');
+const combinePwsh = require('./utils/combinePwsh');
+const logBanner = require('./utils/logBanner');
 const { tmpdir } = require('node:os');
+// Create temp directory
+const osTmpDir = tmpdir()
+const thisTmpDir = fs.mkdtempSync(`${osTmpDir}${path.sep}`, (err, folder) => {
+    if (err) throw err;
+    return folder;
+})
 // pwsh files to write to temp directory
-const pwshAssets = [
+const pwshFiles = [
     'pwsh-script.ps1',
     'pwsh-script-wparam.ps1',
     'pwsh-spawn-location.ps1'
 ]
-// Create temp directory
-const tmpDir = tmpdir()
-const tmpFilePath = fs.mkdtempSync(`${tmpDir}${path.sep}`, (err, folder) => {
-    if (err) throw err;
-    console.log(`tmpdir: ${folder}`);
-    return folder;
-})
 // Write pwsh files to temp directory
-pwshAssets.forEach((file) => {
-    const pwshFilePath = path.join(tmpFilePath, file)
-    console.log(`pwshFilePath: ${pwshFilePath}`);
-    fs.writeFileSync(pwshFilePath, fs.readFileSync(path.join(__dirname, `pwsh${path.sep}${file}`), 'utf8'), 'utf8');
+pwshFiles.forEach((file) => {
+    const pwshFilePath = path.join(thisTmpDir, file)
+    console.log(`Writing ${file} to: ${pwshFilePath}`);
+    fs.writeFileSync(pwshFilePath, fs.readFileSync(path.join(__dirname, `pwsh-files${path.sep}${file}`), 'utf8'), 'utf8');
 })
 // Server listens on port:
 const port = 3000;
@@ -35,15 +35,15 @@ app.use(express.json());
 
 // Simple root endpoint
 app.get('/', (req, res) => {
+    logBanner('SIMPLE-GET:::Returns Hello World!');
     res.send('Hello World!');
 });
 
 // Simple post endpoint
 app.post('/post', (req, res) => {
-    const requestJson = req.body;
-    console.log(req.body);
+    logBanner('SIMPLE-POST:::Received the following request body:', req.body);
     const response = {
-        message: `You Posted: ${JSON.stringify(requestJson)}`,
+        message: `You Posted: ${JSON.stringify(req.body)}`,
         status: 'Great Success!',
         reaction: '~* ~* Much Joy *~ *~'
     };
@@ -52,13 +52,8 @@ app.post('/post', (req, res) => {
 
 // Post endpoint to run the powershell script from the pkg snapshot path
 app.get('/spawn-pwsh-location', async (req, res) => {
-    console.error('#'.repeat(80));
-    console.log('#'.repeat(80));
-    console.log('PWSH-SPAWN-LOCATION:::Returns Get-Location path from spawned pwsh process:')
-    console.log('#'.repeat(80));
-    console.error('#'.repeat(80));
-
-    const pwshSnapshotFile = path.join(__dirname, `pwsh${path.sep}pwsh-spawn-location.ps1`)
+    logBanner('PWSH-SPAWN-LOCATION:::Returns Get-Location path from spawned pwsh process:')
+    const pwshSnapshotFile = path.join(__dirname, `pwsh-files${path.sep}pwsh-spawn-location.ps1`)
     const pwshContent = fs.readFileSync(pwshSnapshotFile, 'utf8');
     const mode = '-c'
     const args = ''
@@ -71,20 +66,29 @@ app.get('/spawn-pwsh-location', async (req, res) => {
         });
 })
 
+//  /spawn-pwsh-location-wconfig
+app.get('/spawn-pwsh-location-wconfig', async (req, res) => {
+    logBanner('PWSH-SPAWN-LOCATION:::Returns Get-Location path from spawned pwsh process:')
+    const pwshSnapshotFile = path.join(__dirname, `pwsh-files${path.sep}pwsh-spawn-location.ps1`)
+    const pwshContent = fs.readFileSync(pwshSnapshotFile, 'utf8');
+    const mode = '-c'
+    const args = ''
+    const cwd = thisTmpDir
+    await pwshRunner(mode, pwshContent, args, cwd)
+        .then((output) => {
+            res.json(JSON.parse(output));
+        })
+        .catch((err) => {
+            res.json(err);
+        });
+})
 
 
 // Post endpoint to dynamically run powershell file from assets folder
 app.post('/pwsh-command', async (req, res) => {
-    console.log('#'.repeat(80));
-    console.log('#'.repeat(80));
-    console.log('PWSH-FILE:::Received the following request body:')
-    console.log('#'.repeat(80));
-    console.log(req.body);
-    console.log('#'.repeat(80));
-    console.log('#'.repeat(80));
-
+    logBanner('PWSH-FILE:::Received the following request body:', req.body);
     const commandFileName = req.body.CommandFile;
-    const pwshCommandString = fs.readFileSync(path.join(__dirname, `/assets/${commandFileName}.ps1`), 'utf8');
+    const pwshCommandString = fs.readFileSync(path.join(__dirname, `pwsh-commands${path.sep}${commandFileName}.ps1`), 'utf8');
     const pwshScriptBlock = combinePwsh(pwshCommandString, JSON.stringify(req.body));
     const mode = '-c'
     const args = '';
@@ -97,22 +101,15 @@ app.post('/pwsh-command', async (req, res) => {
         });
 });
 
-// fs.mkdtempSync(prefix[, options])
-// Post endpoint to run the powershell script from the temp directory
+// Post endpoint to run the powershell script from the tmpdir directory
 app.post('/pwsh-temp-file', async (req, res) => {
-    console.log('#'.repeat(80));
-    console.log('#'.repeat(80));
-    console.log('PWSH-TEMP:::Received the following request body:')
-    console.log('#'.repeat(80));
-    console.log(req.body);
-    console.log('#'.repeat(80));
-    console.log('#'.repeat(80));
-
-    const pwshFilePath = path.join(tmpFilePath, 'pwsh-script-wparam.ps1')
-    console.log(`pwshFilePath: ${pwshFilePath}`);
+    logBanner('PWSH-TEMP:::Received the following request body:', req.body);
+    const pwshFilePath = path.join(thisTmpDir, 'pwsh-script-wparam.ps1')
+    console.log(`(User just ran the pwsh file: ${pwshFilePath})`);
     const mode = '-f'
     const args = JSON.stringify(req.body);
-    await pwshRunner(mode, pwshFilePath, args)
+    const cwd = thisTmpDir
+    await pwshRunner(mode, 'pwsh-script-wparam.ps1', args, cwd)
         .then((output) => {
             res.json(JSON.parse(output));
         })
@@ -121,7 +118,5 @@ app.post('/pwsh-temp-file', async (req, res) => {
         });
 });
 
-
-
 // Start server
-app.listen(port, () => console.log(`Server listening on port ${port}!`));
+app.listen(port, () => logBanner(`Server listening on port ${port}!`));
