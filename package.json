@@ -12,8 +12,9 @@
       "node18-linux-x64"
     ],
     "assets": [
-      "assets/*",
-      "pwsh/*"
+      "pwsh-commands/*",
+      "pwsh-files/*",
+      "utils/*"
     ]
   },
   "scripts": {

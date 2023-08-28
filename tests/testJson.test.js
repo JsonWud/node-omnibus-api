@@ -1,4 +1,4 @@
-const testJson = require('../testJson');
+const testJson = require('../utils/testJson');
 const test = require('node:test');
 const assert = require('node:assert')
 
