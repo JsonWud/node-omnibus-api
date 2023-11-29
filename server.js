@@ -39,6 +39,11 @@ app.get('/', (req, res) => {
     res.send('Hello World!');
 });
 
+app.get('/timestamp', (req, res) => {
+    logBanner('SIMPLE-GET:::Returns timestamp:');
+    res.send(`${Date.now()}`);
+})
+
 // Simple post endpoint
 app.post('/post', (req, res) => {
     logBanner('SIMPLE-POST:::Received the following request body:', req.body);
