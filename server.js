@@ -41,7 +41,8 @@ app.get('/', (req, res) => {
 
 app.get('/timestamp', (req, res) => {
     logBanner('SIMPLE-GET:::Returns timestamp:');
-    res.send(`${Date.now()}`);
+    const timestamp = Date.now();
+    res.send(timestamp.toString());
 })
 
 // Simple post endpoint
